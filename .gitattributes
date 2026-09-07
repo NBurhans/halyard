@@ -1,2 +1,6 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+* text=auto eol=lf
+*.tsv text eol=lf
+*.md  text eol=lf
+*.gz  binary
+index.html linguist-vendored
+app/app_template.html linguist-vendored

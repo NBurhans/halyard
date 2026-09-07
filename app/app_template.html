@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HALYARD — Species Survey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#12211D;--ground2:#192E28;--ground3:#0C1815;
+  --paper:#E8E2D2;--paper2:#DCD4C0;--ink:#16241F;
+  --brass:#B0873C;--brass-lt:#D8AC5C;--verd:#589B84;--oxide:#A85440;
+  --mute:#8A9A93;--line:rgba(232,226,210,.16);--line2:rgba(232,226,210,.3);
+  --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  --sans:"Archivo","Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--paper);font-family:var(--sans);font-size:15px;line-height:1.5;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+h1,h2,h3{font-family:var(--serif);font-weight:400;letter-spacing:-.01em;margin:0}
+p{margin:0 0 .9em}
+a{color:var(--brass-lt);text-decoration:none}a:hover{text-decoration:underline}
+button,select,input{font:inherit;font-family:var(--sans)}
+button:focus-visible,select:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--brass-lt);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+.mast{border-bottom:1px solid var(--line);background:radial-gradient(1000px 380px at 10% -10%,rgba(88,155,132,.16),transparent 60%),linear-gradient(180deg,var(--ground3),var(--ground))}
+.mast .wrap{padding:34px 20px 22px}
+.mast h1{font-size:clamp(34px,5.5vw,58px);line-height:1;max-width:16ch}
+.mast h1 em{font-style:italic;color:var(--brass-lt)}
+.mast .sub{color:#C9D3CE;max-width:64ch;margin:10px 0 18px;font-size:15px}
+.search{display:flex;gap:10px;align-items:center;max-width:720px}
+.search input{flex:1;background:var(--paper);color:var(--ink);border:0;border-radius:6px;padding:12px 16px;font-size:18px;font-family:var(--serif)}
+.search input::placeholder{color:#6E7873}
+nav{position:sticky;top:0;z-index:20;background:rgba(18,33,29,.96);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding:0 20px}
+nav button{background:none;border:0;border-bottom:2px solid transparent;color:var(--mute);padding:12px;cursor:pointer;white-space:nowrap;font-size:15px}
+nav button[aria-current=page]{color:var(--paper);border-bottom-color:var(--brass)}
+main .wrap{padding:22px 20px 60px}
+
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.filters select,.filters input{background:var(--ground2);color:var(--paper);border:1px solid var(--line2);border-radius:6px;padding:7px 10px}
+.count{color:var(--mute);margin-left:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.spec{background:var(--ground2);border:1px solid var(--line);border-radius:8px;padding:12px 14px;cursor:pointer;display:grid;grid-template-columns:56px 1fr auto;gap:4px 10px;align-items:start}
+.spec:hover{border-color:var(--line2)}
+.spec .art{grid-row:1/4;width:56px;height:56px;image-rendering:pixelated;object-fit:contain;background:var(--ground3);border-radius:6px}
+.spec .nm{font-family:var(--serif);font-size:22px;line-height:1.1}
+.spec .nm small{font-family:var(--sans);font-size:12px;color:var(--mute);margin-left:6px}
+.spec .tys{grid-column:1/-1;display:flex;gap:5px;flex-wrap:wrap;margin-top:2px}
+.spec .mark{text-align:right}
+.spec .no{color:var(--mute);font-size:12px}
+.spec .cm{color:var(--brass-lt);font-weight:600;font-size:12px}
+.ty{display:inline-block;padding:1px 8px;border-radius:3px;font-size:12px;font-weight:600;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.45)}
+.tier{display:inline-block;min-width:30px;text-align:center;border-radius:3px;padding:1px 6px;font-weight:700;font-size:13px;color:var(--ink)}
+.tier.Sp{background:var(--brass-lt)}.tier.S{background:var(--verd)}.tier.A{background:#8DB7C9}
+.tier.B{background:var(--paper2)}.tier.C{background:#9AA79F}.tier.D{background:#5E6C66;color:var(--paper)}
+.tier.F{background:#3C4944;color:var(--mute)}.tier.NR{background:var(--ground3);color:var(--mute)}
+
+.back{background:none;border:1px solid var(--line2);color:var(--paper);border-radius:6px;padding:6px 12px;cursor:pointer;margin-bottom:14px}
+.doss h2{font-size:clamp(34px,5vw,54px);line-height:1}
+.doss .hero{display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap}
+.doss .art{width:128px;height:128px;image-rendering:pixelated;object-fit:contain;background:var(--ground3);border-radius:10px;border:1px solid var(--line);flex:none}
+.doss .lead{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:8px 0 4px;color:#C9D3CE}
+.doss .lead .big{font-size:22px;color:var(--paper)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+@media(max-width:820px){.cols{grid-template-columns:1fr}}
+h3{font-family:var(--sans);font-weight:600;font-size:13px;color:var(--mute);margin:20px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;margin:0}
+.kv dt{color:var(--mute)}.kv dd{margin:0}
+.stat{display:grid;grid-template-columns:38px 40px 1fr;gap:10px;align-items:center;margin:3px 0}
+.stat .bar{height:9px;background:var(--ground3);border-radius:3px;position:relative}
+.stat .bar i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--mute)}
+.stat .bar i.hi{background:var(--verd)}.stat .bar i.lo{background:var(--oxide)}
+.curve{width:100%;height:120px;display:block}
+.mv{display:inline-block;padding:2px 8px;margin:2px 3px 2px 0;border-radius:3px;background:var(--ground3);font-size:13px;border-left:3px solid var(--line2)}
+.mv.used{border:1px solid var(--brass-lt);border-left-width:3px;background:rgba(216,172,92,.12)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{color:var(--mute);font-weight:600;text-align:left;padding:6px 8px;border-bottom:1px solid var(--line2);white-space:nowrap;cursor:pointer}
+th.n,td.n{text-align:right}th.no{cursor:default}
+td{padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+tr.clk{cursor:pointer}tr.clk:hover{background:var(--ground2)}
+.note{color:var(--mute);font-size:13px}
+.warn{color:var(--brass-lt)}
+.band{margin:18px 0 6px;padding:5px 10px;border-radius:4px;font-weight:600;color:var(--ink);display:flex;justify-content:space-between;background:var(--paper2)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.chip{padding:3px 10px;border:1px solid var(--line2);border-radius:14px;background:var(--ground2);font-size:13px}
+.empty{color:var(--mute);padding:40px 0;text-align:center;font-family:var(--serif);font-size:20px}
+.rt{background:var(--ground2);border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin:10px 0}
+.rt h4{margin:0 0 6px;font-family:var(--serif);font-size:20px;font-weight:400}
+.rostart{width:40px;height:40px;image-rendering:pixelated;vertical-align:middle;margin-right:6px;object-fit:contain}
+.tbl-scroll{overflow-x:auto}
+</style>
+</head>
+<body>
+<header class="mast"><div class="wrap">
+  <h1>A survey of every <em>obtainable</em> species</h1>
+  <p class="sub">Value over replacement, scored by role against each boss roster, from the game's own data. Search a name, or browse by tier, role, route or fight.</p>
+  <div class="search"><input id="q" type="search" placeholder="Search a species" autocomplete="off"></div>
+</div></header>
+<nav><div class="wrap" id="tabs"></div></nav>
+<main><div class="wrap" id="main">
+  <noscript><div class="empty">This survey needs JavaScript. Open the file in a browser.</div></noscript>
+</div></main>
+<script id="payload" type="application/json">__PAYLOAD__</script>
+<script>
+"use strict";
+function fail(msg){
+  var m=document.getElementById('main');
+  if(m)m.innerHTML='<div class="empty" style="text-align:left;font-family:var(--sans);font-size:15px;max-width:640px">'+
+    '<b>The survey could not open.</b><br><br>'+msg+'<br><br>'+
+    'Open this file directly in Chrome, Safari, Firefox or Edge. If you are seeing this inside an app preview, '+
+    'download the file first and open it from your browser — in-app previews often block scripts.</div>';
+}
+try{
+var D=JSON.parse(document.getElementById("payload").textContent);
+var S=D.strings, str=function(i){return (i===-1||i==null)?null:S[i];};
+var SP={NAME:0,DEX:1,T1:2,T2:3,HP:4,ATK:5,DEF:6,SPA:7,SPD:8,SPE:9,BST:10,A1:11,A2:12,AH:13,EVO:14};
+var V={SP:0,CP:1,ROLE:2,HYB:3,TIER:4,VORP:5,CEIL:6,FLOOR:7,TRACK:8,ABIL:9,NAT:10,ITEM:11,
+       MOVES:12,REL:13,MISS:14,S:15,T:16,Y:17,F:18,AVAIL:19,ACONF:20};
+var TYCOL={Normal:'#8a8a6a',Fighting:'#b3392b',Flying:'#8a7fd9',Poison:'#9a3f9c',Ground:'#d5b455',
+  Rock:'#a89330',Bug:'#8fa41a',Ghost:'#5f4f8f',Steel:'#8f8fb0',Fire:'#e2652b',Water:'#4f7fe6',
+  Grass:'#5fb24a',Electric:'#e6c02b',Psychic:'#e35a86',Ice:'#7fd0d0',Dragon:'#6a3fe6',
+  Dark:'#5a4a3f',Fairy:'#e08fc0'};
+var TIERCLS={'S+':'Sp','S':'S','A':'A','B':'B','C':'C','D':'D','F':'F','NR':'NR'};
+var esc=function(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');};
+var art=function(dex){return dex?'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/'+dex+'.png':'';};
+var fmt=function(n){return n==null?'\u2014':Number(n).toFixed(3);};
+var roleName=function(r){return r.replace(/_/g,' ').replace(/\bphys\b/,'physical').replace(/\bspec\b/,'special')
+  .replace(/^\w/,function(c){return c.toUpperCase();});};
+var tyPill=function(t){return t?'<span class="ty" style="background:'+(TYCOL[t]||'#666')+'">'+esc(t)+'</span>':'';};
+var tierPill=function(t){return '<span class="tier '+(TIERCLS[t]||'F')+'">'+esc(t)+'</span>';};
+
+var best={};
+for(var bi=0;bi<D.valuation.length;bi++){var br=D.valuation[bi];
+  if(!best[br[V.SP]]||br[V.CEIL]>best[br[V.SP]][V.CEIL])best[br[V.SP]]=br;}
+var ROLES=[];(function(){var seen={};for(var i=0;i<D.valuation.length;i++){var k=str(D.valuation[i][V.ROLE]);
+  if(!seen[k]){seen[k]=1;ROLES.push(k);}}ROLES.sort();})();
+var FIGHTCPS=D.fights.map(function(f){return f[0];});
+
+var St={tab:'dex',q:'',sel:null,role:ROLES[0],cp:'all',rcp:String(FIGHTCPS[FIGHTCPS.length-1]),
+        ty:'all',tier:'all',avail:'all',sort:V.VORP,dir:-1,map:''};
+var TABS=[['dex','Dex'],['rank','Rankings'],['roles','Roles'],['boss','Bosses'],
+          ['routes','Routes'],['about','About']];
+
+function range19(){var a=[];for(var i=1;i<=19;i++)a.push([i,'Caught by checkpoint '+i]);return a;}
+function sel(name,opts,cur){
+  var h='<select data-f="'+name+'">';
+  for(var i=0;i<opts.length;i++)h+='<option value="'+esc(opts[i][0])+'"'+
+    (String(opts[i][0])===String(cur)?' selected':'')+'>'+esc(opts[i][1])+'</option>';
+  return h+'</select>';
+}
+
+function specCard(si){
+  var s=D.species[si],b=best[si];
+  return '<div class="spec" tabindex="0" data-sp="'+si+'">'+
+    '<img class="art" loading="lazy" alt="" src="'+art(s[SP.DEX])+'">'+
+    '<div class="nm">'+esc(s[SP.NAME])+'<small>'+s[SP.BST]+'</small></div>'+
+    '<div class="mark">'+(b?tierPill(str(b[V.TIER])):'<span class="no">\u2014</span>')+
+      (b&&b[V.MISS]?'<div class="cm">one-time</div>':'')+'</div>'+
+    '<div class="tys">'+tyPill(str(s[SP.T1]))+tyPill(str(s[SP.T2]))+'</div>'+
+    '<div class="no" style="grid-column:1/-1">'+
+      (b?esc(roleName(str(b[V.ROLE])))+' \u00b7 VORP '+fmt(b[V.VORP])+
+         (b[V.AVAIL]!=null?' \u00b7 caught by cp '+b[V.AVAIL]:''):'not scored')+'</div></div>';
+}
+
+function viewDex(){
+  var idx=[];
+  for(var i=0;i<D.species.length;i++){
+    var s=D.species[i],b=best[i];
+    if(St.q&&s[SP.NAME].toLowerCase().indexOf(St.q.toLowerCase())<0)continue;
+    if(St.ty!=='all'&&str(s[SP.T1])!==St.ty&&str(s[SP.T2])!==St.ty)continue;
+    if(St.tier!=='all'&&(!b||str(b[V.TIER])!==St.tier))continue;
+    if(St.avail!=='all'&&(!b||b[V.AVAIL]==null||+b[V.AVAIL]>+St.avail))continue;
+    idx.push(i);
+  }
+  var types=[];for(var k in TYCOL)types.push([k,k]);
+  var h='<div class="filters">'+
+    sel('ty',[['all','All types']].concat(types),St.ty)+
+    sel('tier',[['all','All tiers'],['S+','S+'],['S','S'],['A','A'],['B','B'],['C','C'],['D','D'],['F','F']],St.tier)+
+    sel('avail',[['all','Available any time']].concat(range19()),St.avail)+
+    '<span class="count">'+idx.length.toLocaleString()+' shown</span></div>';
+  if(!idx.length)return h+'<div class="empty">Nothing matches. Clear a filter.</div>';
+  h+='<div class="grid">';
+  for(var j=0;j<Math.min(idx.length,400);j++)h+=specCard(idx[j]);
+  h+='</div>';
+  if(idx.length>400)h+='<p class="note" style="margin-top:12px">Showing 400 of '+idx.length.toLocaleString()+'. Narrow with search or filters.</p>';
+  return h;
+}
+
+function viewRank(){
+  var rows=[];
+  for(var i=0;i<D.valuation.length;i++){var r=D.valuation[i];
+    if(str(r[V.ROLE])!==St.role||str(r[V.TIER])==='NR')continue;
+    if(St.cp!=='all'&&r[V.CP]!==+St.cp)continue;
+    if(St.avail!=='all'&&(r[V.AVAIL]==null||+r[V.AVAIL]>+St.avail))continue;
+    if(St.q&&D.species[r[V.SP]][SP.NAME].toLowerCase().indexOf(St.q.toLowerCase())<0)continue;
+    rows.push(r);}
+  var sk=St.sort,dr=St.dir;
+  rows.sort(function(a,b){var x=a[sk],y=b[sk];
+    if(x==null)x=-99;if(y==null)y=-99;return (y-x)*(dr<0?1:-1);});
+  var h='<div class="filters">'+
+    sel('role',ROLES.map(function(r){return [r,roleName(r)];}),St.role)+
+    sel('cp',[['all','All boss fights']].concat(FIGHTCPS.map(function(c){return [c,'Fight at checkpoint '+c];})),St.cp)+
+    sel('avail',[['all','Available any time']].concat(range19()),St.avail)+
+    '<span class="count">'+rows.length.toLocaleString()+' builds</span></div>';
+  if(!rows.length)return h+'<div class="empty">No builds match. Try another role.</div>';
+  h+='<div class="tbl-scroll"><table><thead><tr><th class="no">Species</th><th class="no n">Caught by</th>'+
+     '<th data-s="'+V.CP+'" class="n">Fight</th><th class="no">Tier</th>'+
+     '<th data-s="'+V.VORP+'" class="n">VORP</th><th data-s="'+V.CEIL+'" class="n">Ceiling</th>'+
+     '<th data-s="'+V.FLOOR+'" class="n">Floor</th><th class="no">Nature</th>'+
+     '<th class="no">Item</th><th class="no">Moves</th></tr></thead><tbody>';
+  for(var i=0;i<Math.min(rows.length,300);i++){var r=rows[i],s=D.species[r[V.SP]];
+    var ac=String(str(r[V.ACONF]));
+    h+='<tr class="clk" data-sp="'+r[V.SP]+'"><td>'+esc(s[SP.NAME])+
+      (r[V.MISS]?' <span class="cm">one-time</span>':'')+'</td>'+
+      '<td class="n'+(ac==='Asserted'?' warn':'')+'" title="Timing confidence: '+ac+'">'+
+        (r[V.AVAIL]==null?'\u2014':r[V.AVAIL])+'</td>'+
+      '<td class="n">'+r[V.CP]+'</td><td>'+tierPill(str(r[V.TIER]))+'</td>'+
+      '<td class="n">'+fmt(r[V.VORP])+'</td><td class="n">'+fmt(r[V.CEIL])+'</td>'+
+      '<td class="n">'+fmt(r[V.FLOOR])+'</td><td>'+esc(str(r[V.NAT]))+'</td>'+
+      '<td>'+esc(str(r[V.ITEM]))+(r[V.REL]?'':' <span class="warn">scarce</span>')+'</td>'+
+      '<td class="note">'+esc(r[V.MOVES].map(function(m){return str(m);}).join(', '))+'</td></tr>';}
+  h+='</tbody></table></div>';
+  if(rows.length>300)h+='<p class="note" style="margin-top:10px">Showing the top 300 of '+rows.length.toLocaleString()+'.</p>';
+  return h;
+}
+
+function viewRoles(){
+  var cp=+St.rcp;
+  var h='<div class="filters">'+
+    sel('rcp',FIGHTCPS.map(function(c){return [c,'Fight at checkpoint '+c];}),cp)+
+    '<span class="count">leaders by role</span></div>',any=false;
+  for(var i=0;i<ROLES.length;i++){
+    var role=ROLES[i],rows=[];
+    for(var j=0;j<D.valuation.length;j++){var r=D.valuation[j];
+      if(str(r[V.ROLE])===role&&r[V.CP]===cp&&str(r[V.TIER])!=='NR')rows.push(r);}
+    if(!rows.length)continue;
+    any=true;
+    rows.sort(function(a,b){return (b[V.VORP]==null?-99:b[V.VORP])-(a[V.VORP]==null?-99:a[V.VORP]);});
+    h+='<div class="band">'+esc(roleName(role))+'<span>'+rows.length+' scored</span></div><div class="grid">';
+    for(var k=0;k<Math.min(rows.length,6);k++)h+=specCard(rows[k][V.SP]);
+    h+='</div>';
+  }
+  return any?h:h+'<div class="empty">No roles scored at that fight.</div>';
+}
+
+function viewBoss(){
+  var h='';
+  for(var i=0;i<D.fights.length;i++){
+    var f=D.fights[i],list=f[2];
+    h+='<h3>Checkpoint '+f[0]+' \u00b7 level cap '+f[1]+' \u00b7 '+list.length+' fights</h3>';
+    for(var j=0;j<list.length;j++){var t=list[j];
+      h+='<div class="rt"><h4>'+esc(str(t[0]))+' <span class="note">'+esc(roleName(str(t[1])))+'</span></h4><div>';
+      for(var k=0;k<t[2].length;k++)h+='<span class="mv">'+esc(str(t[2][k][0]))+
+        ' <span class="note">L'+t[2][k][1]+'</span></span>';
+      h+='</div></div>';}
+  }
+  return h;
+}
+
+function viewRoutes(){
+  var maps=[],q=St.map.toLowerCase();
+  for(var i=0;i<D.routes.length;i++){var m=D.routes[i];
+    if(!q){maps.push(m);continue;}
+    if(m[0].toLowerCase().indexOf(q)>=0){maps.push(m);continue;}
+    for(var j=0;j<m[1].length;j++)
+      if(D.species[m[1][j][0]][SP.NAME].toLowerCase().indexOf(q)>=0){maps.push(m);break;}
+  }
+  var h='<div class="filters"><input data-f="map" value="'+esc(St.map)+
+    '" placeholder="Filter maps or species" style="min-width:240px">'+
+    '<span class="count">'+maps.length+' maps</span></div>';
+  if(!maps.length)return h+'<div class="empty">No map matches that.</div>';
+  for(var i=0;i<Math.min(maps.length,40);i++){
+    var mp=maps[i][0],enc=maps[i][1];
+    h+='<div class="rt"><h4>'+esc(mp)+' <span class="note">'+enc.length+' encounters</span></h4>'+
+       '<div class="tbl-scroll"><table><thead><tr><th class="no">Species</th><th class="no">Method</th>'+
+       '<th class="no n">Levels</th><th class="no n">Rate</th><th class="no">Best tier</th>'+
+       '<th class="no n">Caught by</th></tr></thead><tbody>';
+    for(var j=0;j<enc.length;j++){var e=enc[j],s=D.species[e[0]],b=best[e[0]];
+      h+='<tr class="clk" data-sp="'+e[0]+'"><td><img class="rostart" loading="lazy" alt="" src="'+art(s[SP.DEX])+'">'+
+        esc(s[SP.NAME])+'</td><td class="note">'+esc(str(e[1]))+'</td>'+
+        '<td class="n">'+esc(e[2]||'\u2014')+'</td><td class="n">'+(e[3]?esc(e[3])+'%':'\u2014')+'</td>'+
+        '<td>'+(b?tierPill(str(b[V.TIER])):'\u2014')+'</td>'+
+        '<td class="n">'+(b&&b[V.AVAIL]!=null?b[V.AVAIL]:'\u2014')+'</td></tr>';}
+    h+='</tbody></table></div></div>';
+  }
+  if(maps.length>40)h+='<p class="note">Showing 40 of '+maps.length+' maps.</p>';
+  return h;
+}
+
+function viewAbout(){
+  var inv=D.meta.invariants,h='';
+  h+='<h3>What this is</h3><p>Every figure here is computed from the game\u2019s own data files. '+
+     D.meta.cells.toLocaleString()+' one-on-one matchups across '+D.meta.candidates.toLocaleString()+
+     ' candidate builds, drawn from '+D.meta.builds_enumerated.toLocaleString()+
+     ' enumerated builds, using generation '+D.meta.mechanics_gen+' mechanics. Every matchup is derived '+
+     'from measured inputs and never confirmed in-game, so read it as a model, not a result.</p>';
+  h+='<h3>Where the timing comes from</h3><p class="warn">'+esc(D.meta.availability_note)+
+     ' Timing shown in amber follows the creator\u2019s published route order, which the game files do not encode.</p>';
+  h+='<h3>Checks</h3><div class="tbl-scroll"><table><thead><tr><th class="no">Check</th>'+
+     '<th class="no n">Measured</th><th class="no n">Limit</th><th class="no">Result</th></tr></thead><tbody>';
+  var names={I1:'No item on more than a quarter of builds',I2:'No nature on more than a fifth',
+    I3:'Rank is not just a base-stat sort',I4:'Every role has real competition',
+    I5:'Recommended teams can all hold their items',I6:'Stats actually drive the build',
+    I7:'No move on more than 30% of sets'};
+  for(var k in inv){var v=inv[k];
+    h+='<tr><td>'+names[k]+'</td><td class="n">'+v[0]+'</td><td class="n">'+v[1]+'</td>'+
+       '<td style="color:'+(v[2]?'var(--verd)':'#E8A79A')+'">'+(v[2]?'pass':'fail')+'</td></tr>';}
+  h+='</tbody></table></div><p class="note" style="margin-top:10px">The four failing checks are known: two '+
+     'are single-item and single-nature concentration inside the wall and support builds, one is genuine role '+
+     'scarcity where a role has fewer than three occupants at all, and one is a single item-copy conflict.</p>';
+  h+='<h3>Tiers</h3><p>Cut at fixed values of value over replacement, not forced into a curve. Replacement is '+
+     'the third-best zero-investment build in that role. Where fewer than three exist there is nothing to be '+
+     'better than, so the row is marked NR and left unranked.</p><div class="chips">';
+  for(var i=0;i<D.meta.tier_thresholds.length;i++){var t=D.meta.tier_thresholds[i];
+    h+='<span class="chip">'+esc(t[0])+' \u2265 '+(t[1]===-99?'\u2014':t[1])+'</span>';}
+  h+='</div><h3>Excluded</h3><p class="note">'+esc(D.meta.excluded)+'</p>';
+  return h;
+}
+
+function viewDoss(si){
+  var s=D.species[si],rows=[];
+  for(var i=0;i<D.valuation.length;i++)if(D.valuation[i][V.SP]===si)rows.push(D.valuation[i]);
+  rows.sort(function(a,b){return a[V.CP]-b[V.CP];});
+  var b=best[si];
+  var h='<button class="back" data-back="1">\u2190 Back</button><div class="doss">';
+  h+='<div class="hero"><img class="art" alt="" src="'+art(s[SP.DEX])+'"><div>'+
+     '<h2>'+esc(s[SP.NAME])+'</h2><div class="lead">'+tyPill(str(s[SP.T1]))+tyPill(str(s[SP.T2]))+
+     '<span class="big">BST '+s[SP.BST]+'</span>'+(b?tierPill(str(b[V.TIER])):'')+'</div></div></div>';
+  h+='<div class="cols"><div><h3>Base stats</h3>';
+  var st=[['HP',s[SP.HP]],['Atk',s[SP.ATK]],['Def',s[SP.DEF]],['SpA',s[SP.SPA]],['SpD',s[SP.SPD]],['Spe',s[SP.SPE]]];
+  for(var i=0;i<st.length;i++){var v=st[i][1],cls=v>=110?'hi':(v<=55?'lo':'');
+    h+='<div class="stat"><span class="note">'+st[i][0]+'</span><b>'+v+'</b>'+
+       '<span class="bar"><i class="'+cls+'" style="width:'+Math.min(100,v/200*100)+'%"></i></span></div>';}
+  h+='<h3>Abilities</h3><div class="chips">';
+  var abs=[s[SP.A1],s[SP.A2],s[SP.AH]];
+  for(var i=0;i<3;i++)if(abs[i]!==-1)h+='<span class="chip">'+esc(str(abs[i]))+(i===2?' (hidden)':'')+'</span>';
+  h+='</div>';
+  if(s[SP.EVO])h+='<h3>Evolves into</h3><p class="note">'+
+    esc(s[SP.EVO].replace(/EVO_|SPECIES_/g,'').replace(/\|/g,' \u00b7 ').replace(/_/g,' ').toLowerCase())+'</p>';
+  h+='</div><div>';
+  if(b){
+    h+='<h3>Best build across boss fights</h3><dl class="kv">'+
+      '<dt>Role</dt><dd>'+esc(roleName(str(b[V.ROLE])))+(b[V.HYB]!==-1?' / '+esc(roleName(str(b[V.HYB]))):'')+'</dd>'+
+      '<dt>VORP</dt><dd>'+fmt(b[V.VORP])+'</dd>'+
+      '<dt>Ceiling / floor</dt><dd>'+fmt(b[V.CEIL])+' / '+fmt(b[V.FLOOR])+'</dd>'+
+      '<dt>Nature</dt><dd>'+esc(str(b[V.NAT]))+'</dd>'+
+      '<dt>Item</dt><dd>'+esc(str(b[V.ITEM]))+(b[V.REL]?'':' <span class="warn">scarce</span>')+'</dd>'+
+      '<dt>Caught by</dt><dd>'+(b[V.AVAIL]==null?'unknown':'checkpoint '+b[V.AVAIL]+
+        ' <span class="note">('+esc(String(str(b[V.ACONF])).toLowerCase())+')</span>')+'</dd>'+
+      '<dt>Fit parts</dt><dd class="note">S '+fmt(b[V.S])+' \u00b7 T '+fmt(b[V.T])+
+        ' \u00b7 Y '+fmt(b[V.Y])+' \u00b7 F '+fmt(b[V.F])+'</dd></dl><h3>Moves</h3><div>';
+    for(var i=0;i<b[V.MOVES].length;i++)h+='<span class="mv used">'+esc(str(b[V.MOVES][i]))+'</span>';
+    h+='</div>';
+  }
+  h+='<h3>Ceiling by boss fight</h3>';
+  if(rows.length){
+    var mx=0;for(var i=0;i<rows.length;i++)if(rows[i][V.CEIL]>mx)mx=rows[i][V.CEIL];
+    mx=mx||1;var w=4;
+    h+='<svg class="curve" viewBox="0 0 '+(rows.length*(w+2))+' 100" preserveAspectRatio="none">';
+    for(var i=0;i<rows.length;i++){var hh=Math.max(1,rows[i][V.CEIL]/mx*96);
+      h+='<rect x="'+(i*(w+2))+'" y="'+(100-hh)+'" width="'+w+'" height="'+hh+'" fill="'+
+         (str(rows[i][V.TIER])==='NR'?'#3C4944':'#589B84')+'"><title>checkpoint '+rows[i][V.CP]+
+         ' \u2014 fit '+fmt(rows[i][V.CEIL])+' \u2014 '+str(rows[i][V.TIER])+'</title></rect>';}
+    h+='</svg><p class="note">'+rows.length+' scored fights, in progression order.</p>';
+  }else h+='<p class="note">Not scored at any fight.</p>';
+  return h+'</div></div></div>';
+}
+
+function render(){
+  document.getElementById('tabs').innerHTML=TABS.map(function(t){
+    return '<button data-t="'+t[0]+'"'+(St.tab===t[0]?' aria-current="page"':'')+'>'+t[1]+'</button>';}).join('');
+  var h;
+  if(St.sel!=null)h=viewDoss(St.sel);
+  else if(St.tab==='dex')h=viewDex();
+  else if(St.tab==='rank')h=viewRank();
+  else if(St.tab==='roles')h=viewRoles();
+  else if(St.tab==='boss')h=viewBoss();
+  else if(St.tab==='routes')h=viewRoutes();
+  else h=viewAbout();
+  document.getElementById('main').innerHTML=h;
+}
+
+document.getElementById('tabs').onclick=function(e){
+  var b=e.target.closest('button');if(!b)return;
+  St.tab=b.dataset.t;St.sel=null;render();window.scrollTo(0,0);};
+document.getElementById('q').oninput=function(e){
+  St.q=e.target.value;if(St.tab!=='rank')St.tab='dex';St.sel=null;render();};
+var mainEl=document.getElementById('main');
+mainEl.addEventListener('click',function(e){
+  if(e.target.closest('[data-back]')){St.sel=null;render();return;}
+  var th=e.target.closest('th[data-s]');
+  if(th){var k=+th.dataset.s;if(St.sort===k)St.dir=-St.dir;else{St.sort=k;St.dir=-1;}render();return;}
+  var n=e.target.closest('[data-sp]');
+  if(n){St.sel=+n.dataset.sp;render();window.scrollTo(0,0);}});
+mainEl.addEventListener('keydown',function(e){
+  if(e.key!=='Enter')return;var n=e.target.closest('[data-sp]');
+  if(n){St.sel=+n.dataset.sp;render();window.scrollTo(0,0);}});
+mainEl.addEventListener('change',function(e){
+  var f=e.target.dataset.f;if(!f||f==='map')return;St[f]=e.target.value;St.sel=null;render();});
+mainEl.addEventListener('input',function(e){
+  if(e.target.dataset.f!=='map')return;
+  St.map=e.target.value;render();
+  var i=document.querySelector('[data-f=map]');
+  if(i){i.focus();try{i.setSelectionRange(i.value.length,i.value.length);}catch(x){}}});
+render();
+}catch(err){fail('Error: '+(err&&err.message?err.message:err));throw err;}
+</script>
+</body>
+</html>

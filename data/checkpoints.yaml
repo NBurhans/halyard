@@ -1,0 +1,33 @@
+# targets/sable/checkpoints.yaml — EXTERNAL
+# Progression gates for target SABLE. Flags are read from the target's own
+# source; level caps are read from source, never assumed.
+#
+# A checkpoint is any progression gate, not only a boss. Checkpoints 2 and 4
+# have no roster of their own and are scored against the next boss ahead
+# (VISION section 8).
+checkpoints:
+  - {order: 1,  gate_flag: FLAG_BADGE01_GET,                        level_cap: 15, confidence: Measured}
+  - {order: 2,  gate_flag: FLAG_DEFEATED_RIVAL_RUSTBORO,            level_cap: 20, confidence: Measured, roster: borrows_next}
+  - {order: 3,  gate_flag: FLAG_BADGE02_GET,                        level_cap: 25, confidence: Measured}
+  - {order: 4,  gate_flag: FLAG_HIDE_ROUTE_110_TEAM_AQUA,           level_cap: 30, confidence: Measured, roster: borrows_next}
+  - {order: 5,  gate_flag: FLAG_RIVAL_110,                          level_cap: 32, confidence: Measured}
+  - {order: 6,  gate_flag: FLAG_BADGE03_GET,                        level_cap: 34, confidence: Measured}
+  - {order: 7,  gate_flag: FLAG_DEFEATED_EVIL_TEAM_MT_CHIMNEY,      level_cap: 44, confidence: Measured}
+  - {order: 8,  gate_flag: FLAG_BADGE04_GET,                        level_cap: 47, confidence: Measured}
+  - {order: 9,  gate_flag: FLAG_BEAT_TRICK_HOUSE_3,                 level_cap: 56, confidence: Measured}
+  - {order: 10, gate_flag: FLAG_BADGE05_GET,                        level_cap: 59, confidence: Measured}
+  - {order: 11, gate_flag: FLAG_RECEIVED_HM_FLY,                    level_cap: 64, confidence: Measured}
+  - {order: 12, gate_flag: FLAG_BADGE06_GET,                        level_cap: 68, confidence: Measured}
+  - {order: 13, gate_flag: FLAG_DAWN_LILYCOVE,                      level_cap: 71, confidence: Measured}
+  - {order: 14, gate_flag: FLAG_TEAM_AQUA_ESCAPED_IN_SUBMARINE,     level_cap: 74, confidence: Measured}
+  - {order: 15, gate_flag: FLAG_BADGE07_GET,                        level_cap: 76, confidence: Measured}
+  - {order: 16, gate_flag: FLAG_KYOGRE_ESCAPED_SEAFLOOR_CAVERN,     level_cap: 80, confidence: Measured}
+  - {order: 17, gate_flag: FLAG_BADGE08_GET,                        level_cap: 82, confidence: Measured}
+  - {order: 18, gate_flag: FLAG_DEFEATED_WALLY_VICTORY_ROAD,        level_cap: 84, confidence: Measured}
+  - {order: 19, gate_flag: FLAG_IS_CHAMPION,                        level_cap: 85, confidence: Measured}
+
+boss_set:
+  include: [gym_leader, elite_four, champion, admin, team_boss, rival]
+  # Level-scaled rival battles carry no fixed roster (levels encoded 0 or -1)
+  # and are excluded from scoring by decision, not omission. 153 slots.
+  exclude_dynamic: true

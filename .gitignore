@@ -1,0 +1,43 @@
+# INTERNAL — local disk only. Classified at creation, per docs/VISION.md section 9.
+# The test: can this be used by someone without the target's source tree?
+# If no, it is INTERNAL and does not belong here.
+
+# Regenerable and far too large to commit.
+# 4,248,276 matchup cells is ~1.5 GB uncompressed.
+04_matchups_cp*.tsv
+04_matchups_cp*.tsv.gz
+04_builds.tsv
+04_builds.tsv.gz
+04c_build_scores.tsv
+
+# Working artifacts
+payload.json
+species_names.json
+boss_resolved.json
+item_names.json
+nonformula_moves.json
+multihit_moves.json
+INT_*
+_i6_*.tsv
+
+# The filled target configuration block (RUNBOOK section 0)
+RUNBOOK.local.md
+target.local.yaml
+
+# Personal run state — the actual team, house rules, progress
+run-state*
+
+# The target's source tree and any game files
+sources/
+source/
+raw/
+pipeline/calc/
+*.gba
+*.sav
+*.ips
+*.bps
+
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store

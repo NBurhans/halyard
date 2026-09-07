@@ -1,0 +1,27 @@
+# targets/sable/mechanics.yaml — EXTERNAL
+# Generation-dependent switches. Pinned once; every damage calculation inherits
+# these, which is why every matrix cell is Derived and never Measured.
+mechanics_gen: 8
+damage_engine:
+  fork: RadicalRedShowdown/damage-calc     # MIT, npm-installable as @smogon/calc
+  entry_point: "@smogon/calc/adaptable"
+  data_layer: custom                       # built from 01_species.tsv
+  bundled_data_layer_used: false           # never; mechanics engine only
+custom_layer:
+  species: 1523
+  moves: 937
+  species_added_absent_from_calc: 464
+  moves_added: 103
+  species_stats_differing_from_calc: 210
+  moves_bp_or_type_differing: 112
+  unsupported_at_calc_time: 0
+quality_of_life:
+  tms_reusable: true          # widens the obtainable movepool at every checkpoint
+  egg_moves_relearnable: true # from the party menu; utility pools are deeper than level-up implies
+  tutors_converted_to_tms: true
+move_constant_aliases:
+  # Source carries both legacy and current spellings; 106 level-up references
+  # silently failed to resolve before these were registered.
+  MOVE_THUNDERPUNCH: MOVE_THUNDER_PUNCH
+  MOVE_BUBBLEBEAM:   MOVE_BUBBLE_BEAM
+  MOVE_VICE_GRIP:    MOVE_VISE_GRIP
