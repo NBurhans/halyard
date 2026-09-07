@@ -45,6 +45,17 @@ def i4(x):
     except (ValueError, TypeError): return None
 
 TY = lambda s: s.replace("TYPE_", "").capitalize() if s not in NA else ""
+
+# What core/model/matrix.js actually ran per track. The app previously showed
+# "252 / 252 / 4" with no stat names, which is unusable — the whole point of a
+# spread is which stat it goes into.
+EV_SPREAD = {
+    "physical": "252 Atk / 252 Spe / 6 HP",
+    "special":  "252 SpA / 252 Spe / 6 HP",
+    "mixed":    "252 Atk / 252 SpA / 6 Spe",
+    "support":  "252 HP / 252 Def / 6 SpD",
+    "floor":    "no EVs",
+}
 CAT = {"PHYSICAL": "P", "SPECIAL": "S", "STATUS": "-"}
 
 
@@ -62,6 +73,7 @@ def main():
     resolved= json.load(open(f"{WORK}/boss_resolved.json"))
     chart   = json.load(open(f"{WORK}/typechart.json"))
 
+    by_const = {s["species_const"]: s for s in species}
     idx_of  = {s["species_const"]: int(s["internal_index"]) for s in species}
     by_idx  = {int(s["internal_index"]): s for s in species}
     mv_id   = {m["move_const"]: i for i, m in enumerate(moves)}
@@ -198,7 +210,13 @@ def main():
             [NI.get(r["primary_role"], NI["NONE"]) for r in run],
             [II.get(r["item"].replace("ITEM_", "").replace("_", " ").title(), 0) for r in run],
             last["nature"], last["ability"].replace("ABILITY_", "").replace("_", " ").title(),
-            "", "252 / 252 / 4",
+            # floor ability: the more common one, which is what a zero-investment
+            # build gets without an ability capsule
+            (by_const[sc]["ability_1"].replace("ABILITY_", "").replace("_", " ").title()
+             if by_const.get(sc, {}).get("ability_1") not in NA else ""),
+            # the spread the matrix actually ran for this track, named per stat
+            # rather than as three bare numbers
+            EV_SPREAD.get(last["track"], "31 IVs, no EVs"),
             None, None,                                    # lv, ldw — not computed
             i4(slast.get("sustain")), i4(slast.get("sustain_kit")),
             int(slast.get("sweep_depth", 0)),

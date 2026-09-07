@@ -8,11 +8,82 @@ so it reads as part of the app rather than bolted on. It is read-only by
 decision: which encounters appear where, no missable tracking, no completion
 state.
 """
-import re, sys
+import re, sys, json
 
 SRC  = "/mnt/user-data/uploads/emerald_imperium_survey_onefile.html"
 B64  = "/home/claude/work/data.b64"
 DEST = "/home/claude/work/index.html"
+
+
+ABOUT_HTML = ("<div style=\"max-width:70ch\"><h2 style=\"font-size:32px\">About</h2>"
+ "<p>Built from the HALYARD pipeline. 1,523 species forms, 1,020 scored across "
+ "nineteen checkpoints, 90 boss fights. <b>4,248,276</b> one-on-one matchups "
+ "computed from 152,865 candidate builds, themselves drawn from 2,414,290 "
+ "enumerated builds. Damage engine: RadicalRedShowdown/damage-calc on a custom "
+ "data layer built from this hack&rsquo;s own species table &mdash; its bundled data "
+ "layer is never used. <b>Generation 8 mechanics are pinned</b>, so every damage "
+ "figure is <b>Derived</b>, never Measured.</p>"
+
+ "<h3>Reading a species page</h3>"
+ "<p>Roles first, and gates come before scores: a wall without recovery is not a "
+ "wall at any bulk. Every build is scored inside a role rather than on one global "
+ "ladder, because a single list collapses into a base-stat sort &mdash; measurably so. "
+ "Role fit is <code>w_stat&middot;S + w_tool&middot;T + w_type&middot;Y + w_fight&middot;F</code>, "
+ "each reported separately. <b>Floor</b> is zero investment. <b>Ceiling</b> is the best "
+ "build using only reliably obtainable items. <b>VORP</b> subtracts the third-best "
+ "floor build in the same role; where fewer than three exist the row is marked NR "
+ "and left unranked rather than given a flattering number.</p>"
+
+ "<h3>Tiers</h3>"
+ "<p>Cut at fixed values of mean VORP and <b>recut against this distribution</b>, not "
+ "inherited from any earlier build &mdash; badges are not comparable to a previous run. "
+ "The curve is not forced: if the hack genuinely has many strong options, that is "
+ "the finding.</p>"
+
+ "<h3>Sustain</h3>"
+ "<p>The turn dimension the damage axes cannot see. The roster is walked "
+ "sequentially on one lifebar with per-turn recovery, the bar resetting at each "
+ "trainer because the player heals between fights. The published figure is the "
+ "<b>kit delta</b> &mdash; this species minus the identical species with no kit &mdash; "
+ "because raw sweep depth measures size rather than kit. Here raw depth correlates "
+ "+0.37 with BST and the delta correlates &minus;0.17.</p>"
+
+ "<h3>Where the timing comes from</h3>"
+ "<p>All 127 encounter maps carry a gate, but only 7 come from item placements in "
+ "source. The other 120 are <b>Asserted</b> &mdash; read from the creator&rsquo;s published "
+ "route order, because the game files encode which flag gates each checkpoint but "
+ "not which map is reachable when. Confidence is carried on every row.</p>"
+
+ "<h3>Checks</h3>"
+ "<p>The damage engine was verified against an independent reimplementation of the "
+ "generation 8 formula: <b>99.7% agreement over 600 cells spanning 18 move types</b>, "
+ "with both discrepancies traced to the checker rather than the engine. Of seven "
+ "release invariants, three pass and four fail. I3 (rank is not a base-stat sort) "
+ "passes at 0.502 against a 0.60 ceiling; I6 (stats drive the build) at 0.856 "
+ "against a 0.20 floor; I7 at 0.129. I1 and I2 fail as single-item and "
+ "single-nature concentration inside the wall and support builds; I4 fails on 117 "
+ "checkpoint-role cells that are mostly genuine role scarcity; I5 fails on one "
+ "item-copy conflict.</p>"
+
+ "<h3>Known limits</h3>"
+ "<p><b>Move priority is scored but does not move first.</b> It gates the revenge "
+ "killer and priority abuser roles and feeds the tool term, but the matchup matrix "
+ "orders turns on raw Speed alone, so Sucker Punch earns role credit without "
+ "actually striking first. 655 published ceilings carry a damaging priority move. "
+ "Level-scaled rival battles carry no fixed roster and are excluded entirely &mdash; "
+ "153 boss slots. Checkpoints 2 and 4 have no roster of their own and are scored "
+ "against the next fight ahead. Nine hack-custom boss forms are missing from the "
+ "species table. Gift creatures and in-game trades were never parsed. 58 alternate "
+ "forms inherit their base form&rsquo;s timing. Investment cost, lineage value and "
+ "per-checkpoint EV spread are not computed and show as em dashes rather than "
+ "invented numbers.</p>"
+
+ "<h3>Interface</h3>"
+ "<p>The survey interface is reused wholesale from the Emerald Imperium analysis "
+ "app by the same author &mdash; layout, dossier, party and boss views unchanged. Only "
+ "the data underneath is swapped and a Routes tab added. Sprite art ships with it, "
+ "from the Radical Red dex set (ydarissep/JwowSquared.github.io); 1,522 of 1,523 "
+ "forms match.</p></div>")
 
 ROUTES_JS = r"""
 // ---------- Routes: read-only encounter listing ----------
@@ -123,12 +194,20 @@ def main():
                    h, count=1)
     assert n == 1, "wire() not found"
 
+    # 6. the About tab described the reference build, not this one. Left as it
+    #    was, the page whose job is to say what to trust was the page lying.
+    h, n = re.subn(r"function rAbout\(\)\{return `[\s\S]*?`;\}",
+                   lambda m: "function rAbout(){return " + json.dumps(ABOUT_HTML) + ";}",
+                   h, count=1)
+    assert n == 1, "rAbout not found"
+
     open(DEST, "w", encoding="utf-8").write(h)
     print(f"built {DEST}  {len(h)/1e6:.2f} MB")
     for probe, label in [("['routes','Routes']", "tab registered"),
                          ("routes:rRoutes", "dispatch hooked"),
                          ("function rRoutes()", "view defined"),
-                         ("#rq", "filter wired")]:
+                         ("#rq", "filter wired"),
+                         ("4,248,276", "About rewritten")]:
         print(f"  {label:<18} {'ok' if probe in h else 'MISSING'}")
 
 

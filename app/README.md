@@ -15,6 +15,21 @@ The reference app is data-driven against a fixed schema documented by its own
 builder. Emitting that schema means the UI code is untouched, so everything that
 already worked keeps working. `transcode.py` carries the field maps.
 
+## EV spreads
+
+`cevs` names the stat each 252 goes into, taken from the spread the matrix
+actually ran for that track — physical `252 Atk / 252 Spe / 6 HP`, support
+`252 HP / 252 Def / 6 SpD`, and so on. It was briefly a hardcoded
+`252 / 252 / 4` with no stat names, which is unusable: the whole point of a
+spread is which stat it goes into.
+
+## The About tab
+
+Rewritten to describe this pipeline. The reference app's prose was left in place
+at first, so the page whose job is to say what to trust was the page carrying the
+wrong generation, the wrong form counts, and a stale "move priority is absent".
+It now states the real figures and the real limits, including the priority one.
+
 ## Deliberately blank
 
 Three fields HALYARD does not compute are sent as null and render as em dashes
